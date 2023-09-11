@@ -18,5 +18,5 @@ module CustomConjugateGradients
     include("resrcr_theory_squared_c2.jl")
     include("resrcr_theory_squared_c3.jl")
     include("resrcg_theory_squared_c3.jl")
-
+    
 end
