@@ -1,5 +1,7 @@
 import Distributions
 import Statistics
+import LinearAlgebra
+using LinearAlgebra
 using Distributions
 using Statistics
 struct CGData{T<:Real}

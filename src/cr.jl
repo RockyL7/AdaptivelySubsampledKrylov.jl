@@ -1,3 +1,6 @@
+import LinearAlgebra
+using LinearAlgebra
+
 # Data container
 struct CGData2{T<:Real}
     r::Vector{T}

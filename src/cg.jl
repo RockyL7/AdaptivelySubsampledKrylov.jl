@@ -1,3 +1,6 @@
+import LinearAlgebra: BLAS, BlasFloat, norm
+using LinearAlgebra
+
 # Data container
 struct CGData{T<:Real}
     r::Vector{T}

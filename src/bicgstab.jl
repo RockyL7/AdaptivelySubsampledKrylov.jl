@@ -1,3 +1,6 @@
+import LinearAlgebra: BLAS, BlasFloat, norm
+using LinearAlgebra
+
 # Data container
 struct BiCGStabData{T}
     v::Vector{T}

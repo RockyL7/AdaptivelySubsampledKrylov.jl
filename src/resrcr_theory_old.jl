@@ -1,6 +1,8 @@
 import Distributions
 import Statistics
 import Random
+import LinearAlgebra
+using LinearAlgebra
 using Distributions
 using Statistics
 using Random
