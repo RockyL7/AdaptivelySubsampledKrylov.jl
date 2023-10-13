@@ -9,7 +9,7 @@ using LinearAlgebra
 
 
 
-struct CGData4{T<:Real}
+struct CGData5{T<:Real}
     r_A::Vector{T}
     z::Vector{T}
     p_A::Vector{T}
@@ -27,7 +27,7 @@ end
 
 function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 0.0,
     seed::Int64 = 1, maxIter::Int64=200, tol::Float64=1e-6, precon=copy!,
-    data=CGData4(length(b), T)) where {T<:Real}
+    data=CGData5(length(b), T)) where {T<:Real}
 
     if genblas_nrm2(b) == 0.0
         x .= 0.0
@@ -162,6 +162,8 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             genblas_axpy!(alpha_A, data.p_A, x)
             # r -= alpha*Ap
             genblas_axpy!(-alpha_A, data.Ap, data.r_A)
+            residual_A = genblas_nrm2(data.r_A)
+            res_list_A = hcat(res_list_A, residual_A)
             #if rel_residual_A <= tol
             #    return 30, 1, rel_residual_A, res_list, x, P_list
             #end
@@ -222,4 +224,4 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     return x, x_B, maxIter
 end
 
-export CGData4, resrcg_theory_squared_c4!
+export CGData5, resrcg_theory_squared_c4!
