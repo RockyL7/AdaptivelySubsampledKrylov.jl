@@ -171,6 +171,7 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             genblas_axpy!(1.0, data.z, data.p_A)
             second = (second * count + p_Anorm_list[iter + 1]) / (count + 1)
             count += 1
+            println("small")
         else 
             weight = 1 / (1-sum_p)
             genblas_axpy!(weight, update_p, x_B)
@@ -187,6 +188,7 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             push!(P_list, p_p)
             #P_list = hcat(P_list, p_p)
             d = rand()
+            println(p_p / (1 - sum_p))
             if (d < (p_p / (1 - sum_p)))
                 return x, x_B, iter+1
             end
@@ -218,6 +220,7 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             first = second
             second = p_Anorm_list[iter + 1]
             count = 1
+            println("large")
         end
     end
     return x, x_B, maxIter

@@ -43,7 +43,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     #println(residual_0)
     #println(genblas_nrm2(b))
     res_list_A = [rel_residual]
-    p_Anorm_list = [0]
+    p_Anorm_list = []
 
     if rel_residual <= tol
         #return 2, 0, residual_0, res_list_B, x, P_list
