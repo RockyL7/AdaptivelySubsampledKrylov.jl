@@ -37,6 +37,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         A(data.Ap, data.p)
         gamma = genblas_dot(data.r, data.z)
         alpha = gamma/genblas_dot(data.p, data.Ap)
+        println(alpha)
         if alpha == Inf || alpha < 0
             return -13, iter, res_list, Anorm_list
         end
@@ -50,7 +51,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         if residual <= tol
             return 30, iter, res_list, Anorm_list
         end
-        precon(data.z, data.r)
+        #precon(data.z, data.r)
         beta = genblas_dot(data.z, data.r)/gamma
         # p = z + beta*p
         genblas_scal!(beta, data.p)
