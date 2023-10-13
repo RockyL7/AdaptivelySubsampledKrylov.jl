@@ -56,7 +56,7 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             return x, x, 0
         end
     else
-        P_list = [0]
+        P_list = [0.0]
     end
     sum_p = P_list[1]
     
