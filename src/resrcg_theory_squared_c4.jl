@@ -17,7 +17,7 @@ struct CGData5{T<:Real}
     r_B::Vector{T}
     p_B::Vector{T}
     Bp::Vector{T}
-    CGData4(n::Int, T::Type) = new{T}(
+    CGData5(n::Int, T::Type) = new{T}(
         zeros(T, n), zeros(T, n), zeros(T, n),
         zeros(T, n), zeros(T, n), zeros(T, n), zeros(T, n))
 end
