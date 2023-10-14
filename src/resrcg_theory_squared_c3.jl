@@ -114,7 +114,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         #if alpha_A == Inf || alpha_A < 0
         #    return -13, iter, residual_0, res_list_B, x_B, P_list
         #end
-        push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
+        push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
         if (iter > deter)
             update_p .= update_p + alpha_A * data.p_A
         end
@@ -180,7 +180,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
             #end
@@ -208,7 +208,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
             #end
@@ -263,7 +263,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
             #end
