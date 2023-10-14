@@ -19,7 +19,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
              data=CGData(length(b), T)) where {T<:Real}
     if genblas_nrm2(b) == 0.0
         x .= 0.0
-        return 1, 0, [], []
+        return 1, x, 0, [], []
     end
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
@@ -28,18 +28,18 @@ function cg!(A, b::Vector{T}, x::Vector{T};
     res_list = [residual_0]
     Anorm_list = []
     if residual_0 <= tol
-        return 2, 0, res_list, Anorm_list
+        return 2, x, 0, res_list, Anorm_list
     end
     
     precon(data.z, data.r)
     data.p .= data.z
-    for iter = 1:maxIter
+    for iter = 1 : maxIter
         A(data.Ap, data.p)
         gamma = genblas_dot(data.r, data.z)
         alpha = gamma/genblas_dot(data.p, data.Ap)
         println(alpha)
         if alpha == Inf || alpha < 0
-            return -13, iter, res_list, Anorm_list
+            return -13, x, iter, res_list, Anorm_list
         end
         # x += alpha*p
         genblas_axpy!(alpha, data.p, x)
@@ -49,7 +49,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         res_list = hcat(res_list, residual)
         push!(Anorm_list, alpha^2 * genblas_dot(data.p, data.Ap))
         if residual <= tol
-            return 30, iter, res_list, Anorm_list
+            return 30, x, iter, res_list, Anorm_list
         end
         precon(data.z, data.r)
         beta = genblas_dot(data.z, data.r)/gamma
@@ -57,7 +57,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         genblas_scal!(beta, data.p)
         genblas_axpy!(1.0, data.z, data.p)
     end
-    return -2, maxIter, res_list, Anorm_list
+    return -2, x, maxIter, res_list, Anorm_list
 end
 
 # API
@@ -66,8 +66,8 @@ function cg(A, b::Vector{T};
             precon=copy!,
             data=CGData(length(b), T)) where {T<:Real}
     x = zeros(eltype(b), length(b))
-    exit_code, num_iters, res_list = cg!(A, b, x, tol=tol, maxIter=maxIter, precon=precon, data=data)
-    return x, exit_code, num_iters, res_list
+    exit_code, x, num_iters, res_list, Anorm_list = cg!(A, b, x; tol=tol, maxIter=maxIter, precon=precon, data=data)
+    return exit_code, x, num_iters, res_list, Anorm_list
 end
 
 export CGData, cg!, cg

@@ -39,10 +39,10 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     genblas_axpy!(one(T), b, data.r_A)
     residual_0 = genblas_nrm2(data.r_A)
     norm_b = genblas_nrm2(b)
-    rel_residual = residual_0 # donot need to normalize
+    rel_residual = residual_0 / norm_b # donot need to normalize
     #println(residual_0)
     #println(genblas_nrm2(b))
-    res_list_A = [rel_residual]
+    res_list_A = [residual_0]
     p_Anorm_list = []
 
     if rel_residual <= tol
@@ -50,7 +50,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         return x, x, 0
     end
 
-    if (deter == -1)
+    if (deter == 0)
         P_list = [init_p]
         #Random.seed!(37 * seed)
         d = rand()
@@ -114,7 +114,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         #if alpha_A == Inf || alpha_A < 0
         #    return -13, iter, residual_0, res_list_B, x_B, P_list
         #end
-        p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+        push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
         if (iter > deter)
             update_p .= update_p + alpha_A * data.p_A
         end
@@ -127,8 +127,8 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         end
         # r -= alpha*Ap
         genblas_axpy!(-alpha_A, data.Ap, data.r_A)
-        rel_residual_A = genblas_nrm2(data.r_A)
-        res_list_A = hcat(res_list_A, rel_residual_A)
+        residual_A = genblas_nrm2(data.r_A)
+        res_list_A = hcat(res_list_A, residual_A)
 
         #if rel_residual_A <= tol
         #    return 30, 1, rel_residual_A, res_list, x, P_list
@@ -140,12 +140,12 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         genblas_axpy!(1.0, data.z, data.p_A)
     end
 
-    value_d =  sqrt(p_Anorm_list[deter + 2])
+    value_d =  sqrt(p_Anorm_list[deter + 1])
     first = 0
     second = 0
     second = value_d^2
     third = 0
-    third = p_Anorm_list[deter + 3]
+    third = p_Anorm_list[deter + 2]
 
     pointer1 = 0
     pointer2 = 0
@@ -153,19 +153,19 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     mark2 = false
     flip = 0
 
-    for iter = deter + 2 : maxIter
+    for iter = deter + 3 : maxIter-1
         if (mark1 == true)
             first = (first * pointer1 + second) / (pointer1 + 1)
             value_d = sqrt(first)
             second = third
-            third =  p_Anorm_list[iter + 2]
+            third =  p_Anorm_list[iter]
         elseif (mark2 == true)
             second = (second * pointer2 + third) / (pointer2 + 1)
-            third = p_Anorm_list[iter + 2]
+            third = p_Anorm_list[iter]
         else
             first = second
             second = third
-            third = p_Anorm_list[iter + 2]           
+            third = p_Anorm_list[iter]           
         end
 
 
@@ -180,7 +180,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
             #end
@@ -208,7 +208,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
             #end
@@ -255,7 +255,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
 
             if (d < (p_p / (1 - sum_p)))
                 #return -13, iter, res_list_A, x_B, P_list
-                return x, x_B, iter+1
+                return x, x_B, iter
             end
 
             sum_p += p_p
@@ -263,7 +263,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            push!(p_Anorm_list, lpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
             #end
@@ -288,7 +288,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             pointer1 = 0
         end
     end
-
+    genblas_axpy!(weight, update_p, x_B)
     # return -2, maxIter, res_list_A, x_B, P_list
     return x, x_B, maxIter
 end
