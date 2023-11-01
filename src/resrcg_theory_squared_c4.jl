@@ -52,6 +52,7 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         P_list = [init_p]
         #Random.seed!(37 * seed)
         d = rand()
+        print(d)
         if (d < init_p)
             return x, x, 0
         end
@@ -188,6 +189,7 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             push!(P_list, p_p)
             #P_list = hcat(P_list, p_p)
             d = rand()
+            print(d)
             if (d < (p_p / (1 - sum_p)))
                 return x, x_B, iter
             end
