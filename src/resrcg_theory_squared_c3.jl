@@ -62,6 +62,7 @@ function resrcg_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     end
     sum_p = P_list[1]
     
+    weight = 1
 
 
 

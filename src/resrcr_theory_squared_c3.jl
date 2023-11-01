@@ -40,15 +40,15 @@ function resrcr_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     genblas_axpy!(one(T), b, data.r_A)
     residual_0 = genblas_nrm2(data.r_A)
     norm_b = genblas_nrm2(b)
-    rel_residual = residual_0 # donot need to normalize
+    rel_residual = residual_0 / norm(b) # donot need to normalize
     #println(residual_0)
     #println(genblas_nrm2(b))
-    res_list_A = [rel_residual]
+    res_list_A = [residual_0]
     if rel_residual <= tol
         return x, x, 0
     end
 
-    if (deter == -1)
+    if (deter == 0)
         P_list = [init_p]
         # Random.seed!(37 * i)
         d = rand()
@@ -121,8 +121,8 @@ function resrcr_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         end
         # r -= alpha*Ap
         genblas_axpy!(-alpha_A, data.Ap, data.r_A)
-        rel_residual_A = genblas_nrm2(data.r_A)
-        res_list_A = hcat(res_list_A, rel_residual_A)
+        residual_A = genblas_nrm2(data.r_A)
+        res_list_A = hcat(res_list_A, residual_A)
 
         #if rel_residual_A <= tol
         #    return 30, 1, rel_residual_A, res_list, x, P_list
@@ -134,12 +134,12 @@ function resrcr_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         genblas_axpy!(1.0, data.r_A, data.p_A)
     end
 
-    value_d = sqrt(res_list_A[deter + 1]^2 - res_list_A[deter + 2]^2)
+    value_d = sqrt(res_list_A[deter + 2]^2 - res_list_A[deter + 3]^2)
     first = 0
     second = 0
     second = value_d^2
     third = 0
-    third = res_list_A[deter + 2]^2 - res_list_A[deter + 3]^2
+    third = res_list_A[deter + 3]^2 - res_list_A[deter + 4]^2
 
     pointer1 = 0
     pointer2 = 0
@@ -147,7 +147,7 @@ function resrcr_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     mark2 = false
     flip = 0
 
-    for iter = deter + 2 : maxIter
+    for iter = deter + 3 : maxIter-1
         if (mark1 == true)
             first = (first * pointer1 + second) / (pointer1 + 1)
             value_d = sqrt(first)
@@ -254,7 +254,7 @@ function resrcr_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             d = rand()
 
             if (d < (p_p / (1 - sum_p)))
-                return x, x_B, iter+1
+                return x, x_B, iter
             end
 
             sum_p += p_p
@@ -289,7 +289,7 @@ function resrcr_theory_squared_c3!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             pointer1 = 0
         end
     end
-
+    genblas_axpy!(weight, update_p, x_B)
     return x, x_B, maxIter
 end
 
