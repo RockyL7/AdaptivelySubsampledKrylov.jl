@@ -27,7 +27,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
     residual_0 = genblas_nrm2(data.r)
     #res_list = [residual_0]
     #Anorm_list = []
-    
+
     if residual_0 <= tol
         return 2, x, 0 #, res_list, Anorm_list
     end
@@ -38,7 +38,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         A(data.Ap, data.p)
         gamma = genblas_dot(data.r, data.z)
         alpha = gamma/genblas_dot(data.p, data.Ap)
-        println(alpha)
+        #println(alpha)
         if alpha == Inf || alpha < 0
             return -13, x, iter #, res_list, Anorm_list
         end
