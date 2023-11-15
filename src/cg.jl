@@ -25,10 +25,12 @@ function cg!(A, b::Vector{T}, x::Vector{T};
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
     residual_0 = genblas_nrm2(data.r)
+    norm_b = genblas_nrm2(b)
     #res_list = [residual_0]
     #Anorm_list = []
+    rel_residual = residual_0 / norm_b
 
-    if residual_0 <= tol
+    if rel_residual <= tol
         return 2, x, 0 #, res_list, Anorm_list
     end
     
@@ -46,7 +48,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         genblas_axpy!(alpha, data.p, x)
         # r -= alpha*Ap
         genblas_axpy!(-alpha, data.Ap, data.r)
-        residual = genblas_nrm2(data.r)/residual_0
+        residual = genblas_nrm2(data.r) / norm_b
         #res_list = hcat(res_list, residual)
         #push!(Anorm_list, alpha^2 * genblas_dot(data.p, data.Ap))
         if residual <= tol
@@ -61,14 +63,14 @@ function cg!(A, b::Vector{T}, x::Vector{T};
     return -2, x, maxIter #, res_list, Anorm_list
 end
 
-# API
+
 function cg(A, b::Vector{T};
             tol::Float64=1e-6, maxIter::Int64=200,
             precon=copy!,
             data=CGData(length(b), T)) where {T<:Real}
     x = zeros(eltype(b), length(b))
-    exit_code, x, num_iters, res_list, Anorm_list = cg!(A, b, x; tol=tol, maxIter=maxIter, precon=precon, data=data)
-    return exit_code, x, num_iters #, res_list, Anorm_list
+    exit_code, x, num_iters, = cg!(A, b, x; tol=tol, maxIter=maxIter, precon=precon, data=data)
+    return exit_code, x, num_iters 
 end
 
 export CGData, cg!, cg

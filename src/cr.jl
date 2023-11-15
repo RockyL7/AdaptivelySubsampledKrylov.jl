@@ -1,4 +1,4 @@
-import LinearAlgebra
+#import LinearAlgebra
 using LinearAlgebra
 
 # Data container
@@ -25,7 +25,8 @@ function cr!(A, b::Vector{T}, x::Vector{T};
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
     residual_0 = genblas_nrm2(data.r)
-    rel_residual = residual_0 / residual_0 
+    norm_b = genblas_nrm2(b)
+    rel_residual = residual_0 / norm_b
     #println(residual_0)
     #println(genblas_nrm2(b))
     res_list = [rel_residual]
@@ -45,7 +46,7 @@ function cr!(A, b::Vector{T}, x::Vector{T};
         genblas_axpy!(alpha, data.p, x)
         # r -= alpha*Ap
         genblas_axpy!(-alpha, data.Ap, data.r)
-        rel_residual = genblas_nrm2(data.r)/residual_0
+        rel_residual = genblas_nrm2(data.r) / norm_b
         #println(rel_residual)
         #println(iter)
         res_list = hcat(res_list, rel_residual)
@@ -64,7 +65,6 @@ end
 # API
 function cr(A, b::Vector{T};
             tol::Float64=1e-6, maxIter::Int64=200,
-            precon=copy!,
             data=CGData2(length(b), T)) where {T<:Real}
     x = zeros(eltype(b), length(b))
     x, exit_code, num_iters, res_list = cr!(A, b, x, tol=tol, maxIter=maxIter, data=data)

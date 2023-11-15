@@ -29,38 +29,16 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     seed::Int64 = 1, maxIter::Int64=200, tol::Float64=1e-6, precon=copy!,
     data=CGData5(length(b), T)) where {T<:Real}
 
-    if genblas_nrm2(b) == 0.0
-        x .= 0.0
-        #return 1, 0, -1, x
-        return x, x, 0
-    end
+
     A(data.r_A, x)
     genblas_scal!(-one(T), data.r_A)
     genblas_axpy!(one(T), b, data.r_A)
-    residual_0 = genblas_nrm2(data.r_A)
-    norm_b = genblas_nrm2(b)
-    rel_residual = residual_0 / norm_b # donot need to normalize
-    #println(residual_0)
-    #println(genblas_nrm2(b))
+
+
+
     p_Anorm_list = []
-    if rel_residual <= tol
-        #return 2, 0, residual_0, res_list_B, x, P_list
-        return x, x, 0
-    end
-
-    if (deter == 0)
-        P_list = [init_p]
-        #Random.seed!(37 * seed)
-        d = rand()
-
-        if (d < init_p)
-            return x, x, 0
-        end
-    else
-        P_list = [0.0]
-    end
-    sum_p = P_list[1]
-    
+    P_list = []
+    sum_p = 0.0  
     weight = 1
 
 
@@ -108,14 +86,30 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
 
     for iter = 0 : deter + 1
 
+
+        if (deter == iter)
+            push!(P_list, init_p)
+            # Random.seed!(37 * i)
+            d = rand()
+    
+            if (d < init_p)
+                return x, x, iter
+            end
+        else
+            push!(P_list, 0.0)
+        end
+
+        sum_p += P_list[iter+1]
+
         A(data.Ap, data.p_A)
         gamma_A = genblas_dot(data.r_A, data.z)
-        alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
+        pAp = genblas_dot(data.p_A, data.Ap)
+        alpha_A = gamma_A / pAp
         #if alpha_A == Inf || alpha_A < 0
         #    return -13, iter, residual_0, res_list_B, x_B, P_list
         #end
         #p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
-        push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+        push!(p_Anorm_list, alpha_A^2 * pAp)
         # x += alpha*p
         genblas_axpy!(alpha_A, data.p_A, x)
 
@@ -136,7 +130,6 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         # p = z + beta*p
         genblas_scal!(beta_A, data.p_A)
         genblas_axpy!(1.0, data.z, data.p_A)
-        push!(P_list, 0)
     end
     
 
@@ -149,8 +142,9 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         if (first < second)
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
-            alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            pAp = genblas_dot(data.p_A, data.Ap)
+            alpha_A = gamma_A / pAp
+            push!(p_Anorm_list, alpha_A^2 * pAp)
             # p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
             #if alpha_A == Inf || alpha_A < 0
             #    return -13, iter, residual_0, res_list_B, x_B, P_list
@@ -177,15 +171,14 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             weight = 1 / (1-sum_p)
             genblas_axpy!(weight, update_p, x_B)
 
-            value_n = sqrt(first) - sqrt(second)
-            p_p = value_n / value_d
-
             if (count > 1)
                 for i = 1 : count -1 
-                    push!(P_list, 0)
+                    push!(P_list, 0.0)
                     # P_list = hcat(P_list, 0)
                 end
             end
+            value_n = sqrt(first) - sqrt(second)
+            p_p = value_n / value_d
             push!(P_list, p_p)
             #P_list = hcat(P_list, p_p)
             d = rand()
@@ -197,8 +190,9 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
 
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
-            alpha_A = gamma_A / genblas_dot(data.p_A, data.Ap)
-            push!(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
+            pAp = genblas_dot(data.p_A, data.Ap)
+            alpha_A = gamma_A / pAp
+            push!(p_Anorm_list, alpha_A^2 * pAp)
             #p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
 
             update_p .= alpha_A * data.p_A
