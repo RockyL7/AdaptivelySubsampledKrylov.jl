@@ -21,7 +21,7 @@ end
 
 
 
-function acg!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 0.0, 
+function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64 = 0.0, 
     maxIter::Int64=200, tol::Float64=1e-6, precon=copy!,
     data=CGData5(length(b), T)) where {T<:Real}
 
@@ -39,8 +39,8 @@ function acg!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 
     x_B = copy(x)
     update_p = zeros(size(b))
 
-    for iter = 0 : deter + 1
-        if (deter == iter)
+    for iter = 0 : term_min + 1
+        if (term_min == iter)
             push!(P_list, init_p)
             # Random.seed!(37 * i)
             dice = rand()
@@ -59,7 +59,7 @@ function acg!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 
         # x += alpha*p
         genblas_axpy!(alpha_A, data.p_A, x)
 
-        if (iter < deter + 1)
+        if (iter < term_min + 1)
             genblas_axpy!(alpha_A, data.p_A, x_B)
         else
             update_p .= update_p + alpha_A * data.p_A
@@ -73,12 +73,12 @@ function acg!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 
         genblas_axpy!(1.0, data.z, data.p_A)
     end
     
-    value_d =  sqrt(p_Anorm_list[deter + 1])
+    value_d =  sqrt(p_Anorm_list[term_min + 1])
     first = value_d^2
-    second = p_Anorm_list[deter + 2]
+    second = p_Anorm_list[term_min + 2]
     count = 1
 
-    for iter = deter + 2 : maxIter - 1
+    for iter = term_min + 2 : maxIter - 1
         if (first < second)
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
