@@ -1,11 +1,10 @@
-# Data container
-# import Distributions
-# import Statistics
-# import LinearAlgebra
 using LinearAlgebra
 using Distributions
 using Statistics
 
+
+
+# Data container
 struct CGData6{T<:Real}
     r::Vector{T}
     z::Vector{T}
@@ -18,20 +17,16 @@ end
 
 
 
-# Solves for x
 function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float64; 
              init_p::Float64 = 0.0,
              maxIter::Int64=200,
              precon=copy!,
              data=CGData6(length(b), T)) where {T<:Real}
+
     w_x = copy(x)
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
-    #sum_res = 1 - residual_0
-    #if term <= (sum_res)
-    #    return 2, 0, residual_0, x
-    #end
     precon(data.z, data.r)
     data.p .= data.z
 
@@ -40,10 +35,8 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
         if (dice < init_p)
             return x, w_x, 0
         end
-    end
-
+    end  
     mult = 1 / (1-init_p)
-
 
     for iter = 1 : maxIter
         if (iter < term_min)
@@ -71,7 +64,6 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             # r -= alpha*Ap
             genblas_axpy!(-alpha, data.Ap, data.r)
             if term <= iter
-                #return 30, iter, residual, x
                 return x, w_x, iter
             end
             precon(data.z, data.r)

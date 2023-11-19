@@ -1,14 +1,10 @@
-# import Distributions
-# import Statistics
-# import Random
-# import LinearAlgebra
 using Distributions
 using Statistics
 using Random
 using LinearAlgebra
 
 
-
+# Data container
 struct CGData5{T<:Real}
     r_A::Vector{T}
     z::Vector{T}
@@ -25,90 +21,40 @@ end
 
 
 
-function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 0.0,
-    seed::Int64 = 1, maxIter::Int64=200, tol::Float64=1e-6, precon=copy!,
+function acg!(A, b::Vector{T}, x::Vector{T};  deter::Int64=0, init_p::Float64 = 0.0, 
+    maxIter::Int64=200, tol::Float64=1e-6, precon=copy!,
     data=CGData5(length(b), T)) where {T<:Real}
-
 
     A(data.r_A, x)
     genblas_scal!(-one(T), data.r_A)
     genblas_axpy!(one(T), b, data.r_A)
-
-
-
     p_Anorm_list = []
     P_list = []
     sum_p = 0.0  
     weight = 1
-
-
-
-    
     data.r_B .= data.r_A   
     precon(data.z, data.r_A)
     data.p_A .= data.z
     data.p_B .= data.z
     x_B = copy(x)
-
     update_p = zeros(size(b))
 
-
-
-    # for iter = 0 : deter
-
-    #     B(data.Bp, data.p_B)
-    #     B(data.Br, data.r_B)
-    #     gamma_B = genblas_dot(data.r_B, data.Br)
-    #     alpha_B = gamma_B/genblas_dot(data.Bp, data.Bp)
-    #     #if alpha_A == Inf || alpha_A < 0
-    #     #    return -13, iter, residual_0, res_list_B, x_b, P_list
-    #     #end
-
-    #     # x += alpha*p
-    #     genblas_axpy!(alpha_B, data.p_B, x_B)
-    #     # r -= alpha*Ap
-    #     genblas_axpy!(-alpha_B, data.Bp, data.r_B)
-    #     #rel_residual_B = genblas_nrm2(data.r_B) / norm_b
-    #     #res_list_B = hcat(res_list_B, rel_residual_B)
-
-    #     #if rel_residual_A <= tol
-    #     #    return 30, 1, rel_residual_A, res_list, x, P_list
-    #     #end
-    #     B(data.Br, data.r_B)
-    #     beta_B = genblas_dot(data.r_B, data.Br) / gamma_B
-    #     # p = z + beta*p
-    #     genblas_scal!(beta_B, data.p_B)
-    #     genblas_axpy!(1.0, data.r_B, data.p_B)
-    # end
-
-
-
-
     for iter = 0 : deter + 1
-
-
         if (deter == iter)
             push!(P_list, init_p)
             # Random.seed!(37 * i)
-            d = rand()
-    
-            if (d < init_p)
+            dice = rand()
+            if (dice < init_p)
                 return x, x, iter
             end
         else
             push!(P_list, 0.0)
         end
-
         sum_p += P_list[iter+1]
-
         A(data.Ap, data.p_A)
         gamma_A = genblas_dot(data.r_A, data.z)
         pAp = genblas_dot(data.p_A, data.Ap)
         alpha_A = gamma_A / pAp
-        #if alpha_A == Inf || alpha_A < 0
-        #    return -13, iter, residual_0, res_list_B, x_B, P_list
-        #end
-        #p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
         push!(p_Anorm_list, alpha_A^2 * pAp)
         # x += alpha*p
         genblas_axpy!(alpha_A, data.p_A, x)
@@ -120,11 +66,6 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         end
         # r -= alpha*Ap
         genblas_axpy!(-alpha_A, data.Ap, data.r_A)
-
-
-        #if rel_residual_A <= tol
-        #    return 30, 1, rel_residual_A, res_list, x, P_list
-        #end
         precon(data.z, data.r_A)
         beta_A = genblas_dot(data.z, data.r_A) / gamma_A
         # p = z + beta*p
@@ -132,7 +73,6 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
         genblas_axpy!(1.0, data.z, data.p_A)
     end
     
-
     value_d =  sqrt(p_Anorm_list[deter + 1])
     first = value_d^2
     second = p_Anorm_list[deter + 2]
@@ -145,21 +85,11 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             pAp = genblas_dot(data.p_A, data.Ap)
             alpha_A = gamma_A / pAp
             push!(p_Anorm_list, alpha_A^2 * pAp)
-            # p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
-            #if alpha_A == Inf || alpha_A < 0
-            #    return -13, iter, residual_0, res_list_B, x_B, P_list
-            #end
-
             update_p .= update_p + alpha_A * data.p_A
-
             # x += alpha*p
             genblas_axpy!(alpha_A, data.p_A, x)
             # r -= alpha*Ap
             genblas_axpy!(-alpha_A, data.Ap, data.r_A)
-
-            #if rel_residual_A <= tol
-            #    return 30, 1, rel_residual_A, res_list, x, P_list
-            #end
             precon(data.z, data.r_A)
             beta_A = genblas_dot(data.z, data.r_A) / gamma_A
             # p = z + beta*p
@@ -168,24 +98,24 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             second = (second * count + p_Anorm_list[iter + 1]) / (count + 1)
             count += 1
         else 
+            ## calculate the weight
             weight = 1 / (1-sum_p)
             genblas_axpy!(weight, update_p, x_B)
 
             if (count > 1)
                 for i = 1 : count -1 
                     push!(P_list, 0.0)
-                    # P_list = hcat(P_list, 0)
                 end
             end
+
+            ## roll the dice to decide whether terminate or not
             value_n = sqrt(first) - sqrt(second)
             p_p = value_n / value_d
             push!(P_list, p_p)
-            #P_list = hcat(P_list, p_p)
-            d = rand()
-            if (d < (p_p / (1 - sum_p)))
+            dice = rand()
+            if (dice < (p_p / (1 - sum_p)))
                 return x, x_B, iter
             end
-
             sum_p += p_p
 
             A(data.Ap, data.p_A)
@@ -193,24 +123,16 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
             pAp = genblas_dot(data.p_A, data.Ap)
             alpha_A = gamma_A / pAp
             push!(p_Anorm_list, alpha_A^2 * pAp)
-            #p_Anorm_list = hcat(p_Anorm_list, alpha_A^2 * genblas_dot(data.p_A, data.Ap))
-
             update_p .= alpha_A * data.p_A
-
             # x += alpha*p
             genblas_axpy!(alpha_A, data.p_A, x)
             # r -= alpha*Ap
             genblas_axpy!(-alpha_A, data.Ap, data.r_A)
-
-            #if rel_residual_A <= tol
-            #    return 30, 1, rel_residual_A, res_list, x, P_list
-            #end
             precon(data.z, data.r_A)
             beta_A = genblas_dot(data.r_A, data.z) / gamma_A
             # p = z + beta*p
             genblas_scal!(beta_A, data.p_A)
             genblas_axpy!(1.0, data.z, data.p_A)
-
             first = second
             second = p_Anorm_list[iter + 1]
             count = 1
@@ -220,4 +142,4 @@ function resrcg_theory_squared_c4!(A, b::Vector{T}, x::Vector{T};  deter::Int64=
     return x, x_B, maxIter
 end
 
-export CGData5, resrcg_theory_squared_c4!
+export CGData5, acg!
