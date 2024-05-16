@@ -32,6 +32,8 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
     P_list = []
     sum_p = 0.0  
     weight = 1
+    first = 0
+    second = 0
     data.r_B .= data.r_A   
     precon(data.z, data.r_A)
     data.p_A .= data.z
@@ -41,16 +43,13 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
 
     for iter = 0 : term_min + 1
         if (term_min == iter)
-            push!(P_list, init_p)
+            sum_p += init_p
             # Random.seed!(37 * i)
             dice = rand()
             if (dice < init_p)
                 return x, x, iter
             end
-        else
-            push!(P_list, 0.0)
         end
-        sum_p += P_list[iter+1]
         A(data.Ap, data.p_A)
         gamma_A = genblas_dot(data.r_A, data.z)
         pAp = genblas_dot(data.p_A, data.Ap)
@@ -71,11 +70,15 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
         # p = z + beta*p
         genblas_scal!(beta_A, data.p_A)
         genblas_axpy!(1.0, data.z, data.p_A)
+        if (iter == term_min)
+            first = alpha_A^2 * pAp
+        end
+        if (iter == term_min + 1)
+            second = alpha_A^2 * pAp
+        end
     end
     
-    value_d =  sqrt(p_Anorm_list[term_min + 1])
-    first = value_d^2
-    second = p_Anorm_list[term_min + 2]
+    value_d = sqrt(first)
     count = 1
 
     for iter = term_min + 2 : maxIter - 1
@@ -84,7 +87,6 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
             gamma_A = genblas_dot(data.r_A, data.z)
             pAp = genblas_dot(data.p_A, data.Ap)
             alpha_A = gamma_A / pAp
-            push!(p_Anorm_list, alpha_A^2 * pAp)
             update_p .= update_p + alpha_A * data.p_A
             # x += alpha*p
             genblas_axpy!(alpha_A, data.p_A, x)
@@ -95,34 +97,26 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
             # p = z + beta*p
             genblas_scal!(beta_A, data.p_A)
             genblas_axpy!(1.0, data.z, data.p_A)
-            second = (second * count + p_Anorm_list[iter + 1]) / (count + 1)
+            second = (second * count + alpha_A^2 * pAp) / (count + 1)
             count += 1
         else 
             ## calculate the weight
             weight = 1 / (1-sum_p)
             genblas_axpy!(weight, update_p, x_B)
 
-            if (count > 1)
-                for i = 1 : count -1 
-                    push!(P_list, 0.0)
-                end
-            end
 
             ## roll the dice to decide whether terminate or not
             value_n = sqrt(first) - sqrt(second)
-            p_p = value_n / value_d
-            push!(P_list, p_p)
+            p_p = value_n / value_d * (1 - init_p)
             dice = rand()
             if (dice < (p_p / (1 - sum_p)))
                 return x, x_B, iter
             end
             sum_p += p_p
-
             A(data.Ap, data.p_A)
             gamma_A = genblas_dot(data.r_A, data.z)
             pAp = genblas_dot(data.p_A, data.Ap)
             alpha_A = gamma_A / pAp
-            push!(p_Anorm_list, alpha_A^2 * pAp)
             update_p .= alpha_A * data.p_A
             # x += alpha*p
             genblas_axpy!(alpha_A, data.p_A, x)
@@ -134,10 +128,11 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
             genblas_scal!(beta_A, data.p_A)
             genblas_axpy!(1.0, data.z, data.p_A)
             first = second
-            second = p_Anorm_list[iter + 1]
+            second = alpha_A^2 * pAp
             count = 1
         end
     end
+    weight = 1 / (1 - sum_p)
     genblas_axpy!(weight, update_p, x_B)
     return x, x_B, maxIter
 end
