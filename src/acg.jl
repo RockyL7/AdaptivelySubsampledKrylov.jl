@@ -42,6 +42,7 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
     update_p = zeros(size(b))
 
     for iter = 0 : term_min + 1
+        println("hello")
         if (term_min == iter)
             sum_p += init_p
             # Random.seed!(37 * i)
