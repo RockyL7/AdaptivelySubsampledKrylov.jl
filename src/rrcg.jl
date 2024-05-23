@@ -38,7 +38,7 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
     end  
     mult = 1 / (1-init_p)
 
-    for iter = 1 : maxIter
+    for iter = 0 : maxIter-1
         if (iter < term_min)
             A(data.Ap, data.p)
             gamma = genblas_dot(data.r, data.z)
@@ -64,7 +64,7 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             # r -= alpha*Ap
             genblas_axpy!(-alpha, data.Ap, data.r)
             if term <= iter
-                return x, w_x, iter
+                return x, w_x, iter+1
             end
             precon(data.z, data.r)
             beta = genblas_dot(data.z, data.r)/gamma
