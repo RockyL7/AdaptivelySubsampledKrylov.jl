@@ -24,7 +24,6 @@ end
 function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64 = 0.0, 
     maxIter::Int64=200, tol::Float64=1e-6, precon=copy!,
     data=CGData5(length(b), T)) where {T<:Real}
-
     A(data.r_A, x)
     genblas_scal!(-one(T), data.r_A)
     genblas_axpy!(one(T), b, data.r_A)
@@ -42,7 +41,6 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
     update_p = zeros(size(b))
 
     for iter = 0 : term_min + 1
-        println("hello")
         if (term_min == iter)
             sum_p += init_p
             # Random.seed!(37 * i)
