@@ -29,7 +29,7 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
     genblas_axpy!(one(T), b, data.r)
     precon(data.z, data.r)
     data.p .= data.z
-
+    norm_b = genblas_nrm2(b)
     if(term_min == 0.0)
         dice = rand()
         if (dice < init_p)
@@ -64,6 +64,9 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             # r -= alpha*Ap
             genblas_axpy!(-alpha, data.Ap, data.r)
             if term <= iter
+                residual_0 = genblas_nrm2(data.r)
+                rel_residual = residual_0 / norm_b
+                println("res norm: ", rel_residual)
                 return x, w_x, iter+1
             end
             precon(data.z, data.r)
