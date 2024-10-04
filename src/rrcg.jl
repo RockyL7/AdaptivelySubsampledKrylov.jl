@@ -63,6 +63,11 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             genblas_axpy!(alpha, data.p, x)
             # r -= alpha*Ap
             genblas_axpy!(-alpha, data.Ap, data.r)
+            if term == iter - 1
+                residual_0 = genblas_nrm2(data.r)
+                rel_residual = residual_0 / norm_b
+                println("res norm: ", rel_residual)
+            end
             if term <= iter
                 residual_0 = genblas_nrm2(data.r)
                 rel_residual = residual_0 / norm_b
