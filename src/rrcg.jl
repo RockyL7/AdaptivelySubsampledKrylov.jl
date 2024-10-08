@@ -37,7 +37,6 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
         end
     end  
     mult = 1 / (1-init_p)
-    println("hello")
     for iter = 0 : maxIter-1
         if (iter < term_min)
             A(data.Ap, data.p)
