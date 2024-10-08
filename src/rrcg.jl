@@ -37,17 +37,21 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
         end
     end  
     mult = 1 / (1-init_p)
-
+    println("hello")
     for iter = 0 : maxIter-1
         if (iter < term_min)
             A(data.Ap, data.p)
             gamma = genblas_dot(data.r, data.z)
             alpha = gamma/genblas_dot(data.p, data.Ap)
+            # r -= alpha*Ap
+            genblas_axpy!(-alpha, data.Ap, data.r)
+            residual = genblas_nrm2(data.r_A) / norm_b
+            if isnan(residual)
+                return x, w_x, iter+1
+            end
             # x += alpha*p
             genblas_axpy!(alpha, data.p, x)
             w_x = copy(x)
-            # r -= alpha*Ap
-            genblas_axpy!(-alpha, data.Ap, data.r)
             precon(data.z, data.r)
             beta = genblas_dot(data.z, data.r)/gamma
             # p = z + beta*p
@@ -58,20 +62,24 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             A(data.Ap, data.p)
             gamma = genblas_dot(data.r, data.z)
             alpha = gamma/genblas_dot(data.p, data.Ap)
+            # r -= alpha*Ap
+            genblas_axpy!(-alpha, data.Ap, data.r)
+            residual = genblas_nrm2(data.r_A) / norm_b
+            if isnan(residual)
+                return x, w_x, iter+1
+            end
             # x += alpha*p
             genblas_axpy!(mult * weight * alpha, data.p, w_x)
             genblas_axpy!(alpha, data.p, x)
-            # r -= alpha*Ap
-            genblas_axpy!(-alpha, data.Ap, data.r)
-            if term == iter - 1
-                residual_0 = genblas_nrm2(data.r)
-                rel_residual = residual_0 / norm_b
-                println("res norm: ", rel_residual)
-            end
+            # if term == iter - 1
+            #     residual_0 = genblas_nrm2(data.r)
+            #     rel_residual = residual_0 / norm_b
+            #     println("res norm: ", rel_residual)
+            # end
             if term <= iter
-                residual_0 = genblas_nrm2(data.r)
-                rel_residual = residual_0 / norm_b
-                println("res norm: ", rel_residual)
+                # residual_0 = genblas_nrm2(data.r)
+                # rel_residual = residual_0 / norm_b
+                # println("res norm: ", rel_residual)
                 return x, w_x, iter+1
             end
             precon(data.z, data.r)
