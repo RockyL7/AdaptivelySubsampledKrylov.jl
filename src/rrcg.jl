@@ -45,7 +45,7 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             alpha = gamma/genblas_dot(data.p, data.Ap)
             # r -= alpha*Ap
             genblas_axpy!(-alpha, data.Ap, data.r)
-            residual = genblas_nrm2(data.r_A) / norm_b
+            residual = genblas_nrm2(data.r) / norm_b
             if isnan(residual)
                 return x, w_x, iter+1
             end
@@ -64,7 +64,7 @@ function rrcg!(A, b::Vector{T}, x::Vector{T}, d, term_min::Float64, term::Float6
             alpha = gamma/genblas_dot(data.p, data.Ap)
             # r -= alpha*Ap
             genblas_axpy!(-alpha, data.Ap, data.r)
-            residual = genblas_nrm2(data.r_A) / norm_b
+            residual = genblas_nrm2(data.r) / norm_b
             if isnan(residual)
                 return x, w_x, iter+1
             end
