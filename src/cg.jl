@@ -32,7 +32,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         return x, 0 
     end
     push!(rel_list, rel_residual)
-    push!(x_list, x)
+    push!(x_list, copy(x))
 
     
     precon(data.z, data.r)
@@ -47,7 +47,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         genblas_axpy!(-alpha, data.Ap, data.r)
         residual = genblas_nrm2(data.r) / norm_b
         push!(rel_list, residual)
-        push!(x_list, x)
+        push!(x_list, copy(x))
         if residual <= tol
             return x, iter, rel_list, x_list
         end
