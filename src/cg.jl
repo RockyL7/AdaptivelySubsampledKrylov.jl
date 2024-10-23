@@ -26,10 +26,14 @@ function cg!(A, b::Vector{T}, x::Vector{T};
     residual_0 = genblas_nrm2(data.r)
     norm_b = genblas_nrm2(b)
     rel_residual = residual_0 / norm_b
-
+    rel_list = []
+    x_list = []
     if rel_residual <= tol
         return x, 0 
     end
+    push!(rel_list, rel_residual)
+    push!(x_list, x)
+
     
     precon(data.z, data.r)
     data.p .= data.z
@@ -42,6 +46,8 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         # r -= alpha*Ap
         genblas_axpy!(-alpha, data.Ap, data.r)
         residual = genblas_nrm2(data.r) / norm_b
+        push!(rel_list, rel_residual)
+        push!(x_list, x)
         if residual <= tol
             return x, iter
         end
@@ -51,7 +57,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         genblas_scal!(beta, data.p)
         genblas_axpy!(1.0, data.z, data.p)
     end
-    return x, maxIter
+    return x, maxIter, rel_list, x_list
 end
 
 
