@@ -46,7 +46,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         # r -= alpha*Ap
         genblas_axpy!(-alpha, data.Ap, data.r)
         residual = genblas_nrm2(data.r) / norm_b
-        push!(rel_list, rel_residual)
+        push!(rel_list, residual)
         push!(x_list, x)
         if residual <= tol
             return x, iter, rel_list, x_list
