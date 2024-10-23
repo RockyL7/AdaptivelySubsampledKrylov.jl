@@ -18,7 +18,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
              data=CGData(length(b), T)) where {T<:Real}
     if genblas_nrm2(b) == 0.0
         x .= 0.0
-        return x, 0
+        return x, 0, res_list, x_list
     end
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
@@ -49,7 +49,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
         push!(rel_list, rel_residual)
         push!(x_list, x)
         if residual <= tol
-            return x, iter
+            return x, iter, rel_list, x_list
         end
         precon(data.z, data.r)
         beta = genblas_dot(data.z, data.r)/gamma
