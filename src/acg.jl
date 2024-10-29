@@ -38,6 +38,7 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
     data.p_A .= data.z
     data.p_B .= data.z
     x_B = copy(x)
+    alpha_A = 0
     # x_prev = copy(x)
     # x_prev_B = copy(x)
     # update_p = zeros(size(b))
