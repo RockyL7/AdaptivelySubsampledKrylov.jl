@@ -58,17 +58,18 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
         pAp = genblas_dot(data.p_A, data.Ap)
         alpha_A = gamma_A / pAp
         push!(p_Anorm_list, alpha_A^2 * pAp)
+        # x += alpha*p
+        genblas_axpy!(alpha_A, data.p_A, x)
+        genblas_axpy!(weight * alpha_A, data.p_A, x_B)
+        # x_prev = copy(x)
+        # x_prev_B = copy(x_B)
+
         # r -= alpha*Ap
         genblas_axpy!(-alpha_A, data.Ap, data.r_A)
         residual = genblas_nrm2(data.r_A) / norm_b
         if isnan(residual)
             return x, x_B, iter+1
         end
-        # x += alpha*p
-        genblas_axpy!(alpha_A, data.p_A, x)
-        genblas_axpy!(weight * alpha_A, data.p_A, x_B)
-        # x_prev = copy(x)
-        # x_prev_B = copy(x_B)
         precon(data.z, data.r_A)
         beta_A = genblas_dot(data.z, data.r_A) / gamma_A
         # p = z + beta*p
@@ -92,18 +93,20 @@ function acg!(A, b::Vector{T}, x::Vector{T};  term_min::Int64=0, init_p::Float64
             pAp = genblas_dot(data.p_A, data.Ap)
             alpha_A = gamma_A / pAp
             #update_p .= update_p + alpha_A * data.p_A
-            # r -= alpha*Ap
-            genblas_axpy!(-alpha_A, data.Ap, data.r_A)
-            residual = genblas_nrm2(data.r_A) / norm_b
-            if isnan(residual)
-                return x, x_B, iter+1
-            end
+        
             # x += alpha*p
             genblas_axpy!(alpha_A, data.p_A, x)
             weight = 1 / (1 - sum_p)
             genblas_axpy!(weight * alpha_A, data.p_A, x_B)
             # x_prev = copy(x)
             # x_prev_B = copy(x_B)
+            # r -= alpha*Ap
+            genblas_axpy!(-alpha_A, data.Ap, data.r_A)
+            residual = genblas_nrm2(data.r_A) / norm_b
+            if isnan(residual)
+                return x, x_B, iter+1
+            end
+
             precon(data.z, data.r_A)
             beta_A = genblas_dot(data.z, data.r_A) / gamma_A
             # p = z + beta*p

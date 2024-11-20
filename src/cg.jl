@@ -29,7 +29,7 @@ function cg!(A, b::Vector{T}, x::Vector{T};
     rel_list = []
     x_list = []
     if rel_residual <= tol
-        return x, 0 
+        return x, 0, res_list, x_list
     end
     push!(rel_list, rel_residual)
     push!(x_list, copy(x))
