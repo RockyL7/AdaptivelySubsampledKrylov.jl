@@ -112,7 +112,7 @@ function acr!(A, b::Vector{T}, x::Vector{T}; term_min::Int64=0, init_p::Float64 
             # p = r + beta*p
             genblas_scal!(beta_A, data.p_A)
             genblas_axpy!(1.0, data.r_A, data.p_A)
-            second = (second * count + alpha_A^2 * pAp) / (count +1)
+            second = (second * count + alpha_A^2 * Ap_sq) / (count +1)
             count += 1
         else
             value_n = sqrt(first) - sqrt(second)
