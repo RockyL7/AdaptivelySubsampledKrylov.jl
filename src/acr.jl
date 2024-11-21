@@ -15,7 +15,7 @@ struct CGData15{T<:Real}
     Bp::Vector{T}
     Ar::Vector{T}
     Br::Vector{T}
-    CGData2(n::Int, T::Type) = new{T}(
+    CGData15(n::Int, T::Type) = new{T}(
         zeros(T, n), zeros(T, n), zeros(T, n),
         zeros(T, n), zeros(T, n), zeros(T, n),
         zeros(T, n), zeros(T, n), zeros(T, n))
