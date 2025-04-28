@@ -17,7 +17,7 @@ struct CGData15{T<:Real}
 end
 
 # Solves for x
-function acr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int(1e10),
+function acr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int64=Int(1e10),
     precon=copy!, data=CGData15(length(b), T)) where {T<:Real}
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
