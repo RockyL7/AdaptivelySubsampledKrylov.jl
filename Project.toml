@@ -1,4 +1,4 @@
-name = "CustomConjugateGradients"
+name = "AdaptivelySubsampledKrylov"
 uuid = "d6a78e6e-e733-42a8-871d-340e2c12ebf9"
 authors = ["Qi Luo"]
 version = "1.0.0-DEV"
