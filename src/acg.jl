@@ -48,7 +48,7 @@ function acg(A, b::Vector{T}, x::Vector{T};  η::Float64 = 0.0,
         if (term_min == iter)
             if (term_min > 0)
                 init_prob = max(0, init_prob * (sqrt(g_prev) - sqrt(g_curr)) / sqrt(g_prev))
-            else
+            end
             sum_prob += init_prob
             dice = rand()
             if (dice < init_prob)

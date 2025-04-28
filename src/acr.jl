@@ -48,7 +48,7 @@ function acr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int(1e10
         if (term_min == iter)
             if (term_min > 0)
                 init_prob = max(0, init_prob * (sqrt(g_prev) - sqrt(g_curr)) / sqrt(g_prev))
-            else
+            end
             sum_prob += init_prob
             dice = rand()
             if (dice < init_prob)
@@ -77,7 +77,7 @@ function acr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int(1e10
     count = 1
 
     for iter = term_min + 2 : maxIter-1
-        if(g_prev < g_curr)
+        if (g_prev < g_curr)
             A(data.Ap, data.p)
             A(data.Az, data.z)
             gamma = genblas_dot(data.r, data.Az)
