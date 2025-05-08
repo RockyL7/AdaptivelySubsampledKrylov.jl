@@ -18,7 +18,7 @@ end
 
 # Solves for x
 function ascr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int64=Int(1e10),
-    precon=copy!, data=CGData15(length(b), T)) where {T<:Real}
+              precon=copy!, data=CGData15(length(b), T)) where {T<:Real}
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
@@ -37,7 +37,7 @@ function ascr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int64=I
     data.p .= data.z
     x_B = copy(x)
 
-    for iter = 0 : term_min + 1
+    for iter = 0 : term_min
         A(data.Ap, data.p)
         A(data.Az, data.z)
         gamma = genblas_dot(data.r, data.Az)
@@ -76,7 +76,7 @@ function ascr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int64=I
     value_d = sqrt(g_prev)
     count = 1
 
-    for iter = term_min + 2 : maxIter-1
+    for iter = term_min + 1 : maxIter-1
         if (g_prev < g_curr)
             A(data.Ap, data.p)
             A(data.Az, data.z)
