@@ -48,9 +48,12 @@ function ascg(A, b::Vector{T}, x::Vector{T};  η::Float64 = 0.0,
         if (term_min == iter)
             if (term_min > 0)
                 init_prob = max(0, init_prob * (sqrt(g_prev) - sqrt(g_curr)) / sqrt(g_prev))
+                println("term", (sqrt(g_prev) - sqrt(g_curr)) / sqrt(g_prev))
+                println("init_prob", init_prob)
             end
             sum_prob += init_prob
             dice = rand()
+            println("dice", dice)
             if (dice < init_prob)
                 return x, x, iter+1
             end
