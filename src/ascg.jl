@@ -20,6 +20,7 @@ end
 function ascg(A, b::Vector{T}, x::Vector{T};  η::Float64 = 0.0, 
               maxIter::Int64=Int(1e10), precon=copy!,
               data=CGData5(length(b), T)) where {T<:Real}
+    println("hello")
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
