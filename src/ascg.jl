@@ -20,11 +20,10 @@ end
 function ascg(A, b::Vector{T}, x::Vector{T};  η::Float64 = 0.0, 
               maxIter::Int64=Int(1e10), precon=copy!,
               data=CGData5(length(b), T)) where {T<:Real}
-    println("hello")
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
-    residual_0 = genblas_nrm2(data.r)
+    residual_0 = genblas_nrm2(data.r) / genblas_nrm2(b)
     if isnan(residual_0)
         return x, x, 0
     end
@@ -49,12 +48,9 @@ function ascg(A, b::Vector{T}, x::Vector{T};  η::Float64 = 0.0,
         if (term_min == iter)
             if (term_min > 0)
                 init_prob = max(0, init_prob * (sqrt(g_prev) - sqrt(g_curr)) / sqrt(g_prev))
-                println("term", (sqrt(g_prev) - sqrt(g_curr)) / sqrt(g_prev))
-                println("init_prob", init_prob)
             end
             sum_prob += init_prob
             dice = rand()
-            println("dice", dice)
             if (dice < init_prob)
                 return x, x, iter+1
             end

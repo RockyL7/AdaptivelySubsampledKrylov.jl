@@ -37,7 +37,7 @@ function rrcg(A, b::Vector{T}, x::Vector{T}; term_min::Float64 = 0.0,
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
-    residual_0 = genblas_nrm2(data.r)
+    residual_0 = genblas_nrm2(data.r) / genblas_nrm2(b)
     if isnan(residual_0)
         return x, x, 0
     end

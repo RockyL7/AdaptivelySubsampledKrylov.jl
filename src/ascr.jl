@@ -22,7 +22,7 @@ function ascr(A, b::Vector{T}, x::Vector{T}; η::Float64 = 0.0, maxIter::Int64=I
     A(data.r, x)
     genblas_scal!(-one(T), data.r)
     genblas_axpy!(one(T), b, data.r)
-    residual_0 = genblas_nrm2(data.r)
+    residual_0 = genblas_nrm2(data.r) / genblas_nrm2(b)
     if isnan(residual_0)
         return x, x, 0
     end
